@@ -98,14 +98,15 @@ if __name__ == '__main__':
 
             # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
             reader = reader[reader['area'] != -1]
-            # モバイル空間統計用に出力
-            reader.to_csv(get_write_file_path() + 'logs/mobile' + dir_list + '_' + 'seed' + str(seed) + '.csv',
+            # 出力 *道路交通センサスにはjupyterで整形するので基本形のみでおけ
+            reader.to_csv(get_write_file_path() + 'logs/' + dir_list + '_' + 'seed' + str(seed) + '.csv',
                           index=None,
                           encoding='Shift_JISx0213')
 
-            # roadにcensusがついている行のみ抽出
-            reader = reader[reader['road'].str.contains('census')]
-            # 道路交通センサス用に出力
-            reader.to_csv(get_write_file_path() + 'logs/census' + dir_list + '_' + 'seed' + str(seed) + '.csv',
-                          index=None,
-                          encoding='Shift_JISx0213')
+
+            # # roadにcensusがついている行のみ抽出
+            # reader = reader[reader['road'].str.contains('census')]
+            # # 道路交通センサス用に出力
+            # reader.to_csv(get_write_file_path() + 'logs/census' + dir_list + '_' + 'seed' + str(seed) + '.csv',
+            #               index=None,
+            #               encoding='Shift_JISx0213')
