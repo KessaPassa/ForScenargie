@@ -36,7 +36,7 @@ def create_people_dataframe():
 
 
 if __name__ == '__main__':
-    df = create_people_dataframe()
+    df_base = create_people_dataframe()
 
     # 自動車と歩行者の割合
     dir_list = ['2_8', '4_6', '6_4', '8_2']
@@ -56,6 +56,6 @@ if __name__ == '__main__':
 
             csv_list = {'mobile': mobile, 'census': census, 'vehicles': vehicles, 'pedestrians': pedestrians}
             for key, value in csv_list.items():
-                output = distribute_people(df, value)
-                output.to_csv(output_dir + str(key) + '_' + dir + '_seed' + str(seed) + '.csv')
-                print(str(key) + '_' + dir + '_seed' + str(seed) + '.csv')
+                output = distribute_people(df_base.copy(), value)
+                output.to_csv(output_dir + str(key) + dir + '_seed' + str(seed) + '.csv')
+                print(str(key) + dir + '_seed' + str(seed) + '.csv')
