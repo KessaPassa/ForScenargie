@@ -80,6 +80,7 @@ def set_area_id(df):
             'area'] = area[index].get_id
 
 
+# Scenargieのoutput dataがあるPCで実行すること
 if __name__ == '__main__':
     wb = px.Workbook()
     ws = wb.active

@@ -1,8 +1,14 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
+import env
 
-root_dir = '/Users/kessapassa/OneDrive/research_log/logs/'
-output_dir = root_dir + 'output/'
+
+def get_read_path():
+    return env.ROOT_DIR + 'Origin/'
+
+
+def get_write_path():
+    return env.ROOT_DIR + '3D/'
 
 
 # エリアと時間別に人数を+1ずつしていく
@@ -28,7 +34,7 @@ if __name__ == '__main__':
         df_array = {'mobile': create_people_dataframe(), 'census': create_people_dataframe(), 'vehicles': create_people_dataframe(), 'pedestrians': create_people_dataframe()}
 
         for seed in range(123, 132 + 1):
-            main_csv = pd.read_csv(root_dir + dir + '_seed' + str(seed) + '.csv',
+            main_csv = pd.read_csv(get_read_path() + dir + '_seed' + str(seed) + '.csv',
                                    encoding='Shift_JISx0213',
                                    dtype=None,
                                    delimiter=',')
@@ -44,4 +50,4 @@ if __name__ == '__main__':
         print(dir)
         for key, value in df_array.items():
             df_array[key] /= 10
-            df_array[key].to_csv(output_dir + str(key) + dir + '.csv')
+            df_array[key].to_csv(get_write_path() + str(key) + dir + '.csv')

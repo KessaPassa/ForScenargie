@@ -1,8 +1,14 @@
 import pandas as pd
 import numpy as np
+import env
 
-root_dir = '/Users/kessapassa/OneDrive/research_log/logs/'
-output_dir = root_dir + '2D/'
+
+def get_read_path():
+    return env.ROOT_DIR + 'Origin/'
+
+
+def get_write_path():
+    return env.ROOT_DIR + '2D/'
 
 
 # エリアと時間別に人数を+1ずつしていく
@@ -45,7 +51,7 @@ if __name__ == '__main__':
         # seedを全てプラスして格納する箱を初期化しとく
 
         for seed in range(123, 132 + 1):
-            main_csv = pd.read_csv(root_dir + dir + '_seed' + str(seed) + '.csv',
+            main_csv = pd.read_csv(get_read_path() + dir + '_seed' + str(seed) + '.csv',
                                    encoding='Shift_JISx0213',
                                    dtype=None,
                                    delimiter=',')
@@ -57,5 +63,5 @@ if __name__ == '__main__':
             csv_list = {'mobile': mobile, 'census': census, 'vehicles': vehicles, 'pedestrians': pedestrians}
             for key, value in csv_list.items():
                 output = distribute_people(df_base.copy(), value)
-                output.to_csv(output_dir + str(key) + dir + '_seed' + str(seed) + '.csv')
+                output.to_csv(get_write_path() + str(key) + dir + '_seed' + str(seed) + '.csv')
                 print(str(key) + dir + '_seed' + str(seed) + '.csv')
