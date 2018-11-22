@@ -6,18 +6,16 @@ output_dir = root_dir + 'output/'
 
 
 # エリアと時間別に人数を+1ずつしていく
-def distributePeople(value):
-    poeple_by_area_time = np.zeros((36, 6))
-    poeple_by_area_time = pd.DataFrame(poeple_by_area_time, columns=[3600 * (i + 1) for i in range(6)])
+def distribute_people(value):
+    people_by_area_time = np.zeros((36, 6))
+    people_by_area_time = pd.DataFrame(people_by_area_time, columns=[3600 * (i + 1) for i in range(6)])
     for r in np.asanyarray(value):
-        poeple_by_area_time.loc[r[6], int(r[2])] += 1
-    # poeple_by_area_time.to_csv(output_dir + str(key) + dir + '_' + str(seed) + '.csv')
-    # print(str(key) +  dir + '_' + str(seed) + '.csv')
-    df_array = poeple_by_area_time
+        people_by_area_time.loc[r[6], int(r[2])] += 1
+    df_array = people_by_area_time
     return df_array
 
 
-def createPeopleDataframe():
+def create_people_dataframe():
     return pd.DataFrame(np.zeros((36, 6)), columns=[3600 * (i + 1) for i in range(6)])
 
 
@@ -27,7 +25,7 @@ if __name__ == '__main__':
 
     for dir in dir_list:
         # seedを全てプラスして格納する箱を初期化しとく
-        df_array = {'mobile': createPeopleDataframe(), 'census': createPeopleDataframe(), 'vehicles': createPeopleDataframe(), 'pedestrians': createPeopleDataframe()}
+        df_array = {'mobile': create_people_dataframe(), 'census': create_people_dataframe(), 'vehicles': create_people_dataframe(), 'pedestrians': create_people_dataframe()}
 
         for seed in range(123, 132 + 1):
             main_csv = pd.read_csv(root_dir + dir + '_seed' + str(seed) + '.csv',
@@ -41,7 +39,7 @@ if __name__ == '__main__':
 
             csv_list = {'mobile': mobile, 'census': census, 'vehicles': vehicles, 'pedestrians': pedestrians}
             for key, value in csv_list.items():
-                df_array[key] += distributePeople(value)
+                df_array[key] += distribute_people(value)
 
         print(dir)
         for key, value in df_array.items():
