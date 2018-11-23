@@ -100,7 +100,7 @@ if __name__ == '__main__':
             # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
             reader = reader[reader['area'] != -1]
             # 出力 *道路交通センサスにはjupyterで整形するので基本形のみでおけ
-            reader.to_csv(get_write_file_path() + 'logs/' + dir_list + '_' + 'seed' + str(seed) + '.csv',
+            reader.to_csv(get_write_file_path() + 'logs/' + dir_list + 'seed' + str(seed) + '.csv',
                           index=None,
                           encoding='Shift_JISx0213')
 

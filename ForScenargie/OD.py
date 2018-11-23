@@ -32,18 +32,27 @@ def distribute_od(base, read):
         tmp_dic[str(value[0])] = value
 
     for key, value in tmp_dic.items():
-        row = base.loc[base['id'] == value[0], 'id']
-        if row is not None:
-            print(row)
-            row['type'] = value[1]
-            row[value[2]] = value[3]
-        else:
+        row = base.loc[base['id'] == value[0]]
+
+        # もし空なら新しく行を作成し、追加
+        # row.empty
+        if len(row.index) == 0:
             columns_list = [value[0], value[1]]
-            columns_list.append(split_type(value[2]))
-            print(columns_list)
+            index, times_list = split_type(value[2])
+            times_list[index] = value[3]
+            columns_list.extend(times_list)
 
             tmp = pd.Series(columns_list, index=base.columns)
             base = base.append(tmp, ignore_index=True)
+
+        # 既に同じIDがあるなら時間帯のエリアを追加
+        else:
+            # print('エルス')
+            base.loc[row.index, ['type', value[2]]] = [value[1], value[3]]
+            print(base.loc[row.index, ['type', value[2]]])
+            # row['type'] = value[1]
+            # row[str(value[2])] = value[3]
+
     return base
 
 
@@ -56,12 +65,12 @@ def split_type(time):
         else:
             times_list[key] = np.nan
     # print(times_list)
-    return times_list
+    return index, times_list
 
 
 if __name__ == '__main__':
     df_base = create_base_dataframe()
-    # hoge = pd.Series([0, 1, 2, 3, 4, 5, 6, 7], index=df_base.columns)
+    # hoge = pd.Series([62378, 'Vehicles', 21, 22, 23, 24, np.nan, 26], index=df_base.columns)
     # df_base = df_base.append(hoge, ignore_index=True)
 
     dir_list = ['2_8', '4_6', '6_4', '8_2']
@@ -71,8 +80,8 @@ if __name__ == '__main__':
         for _seed in seed_list:
             # print(_dir + '_seed' + _seed)
             df_read = pd.read_csv(get_read_path() + _dir + '_seed' + _seed + '.csv',
-                                  encoding='Shift_JISx0213',
-                                  dtype=None,
-                                  delimiter=',')
+                                  encoding='Shift_JISx0213')
             df_read = df_read.loc[:, ['id', 'type', 'time', 'area']]
             result = distribute_od(df_base.copy(), df_read)
+            result.to_csv(get_write_path() + _dir + 'seed' + _seed + '.csv')
+            print(_dir + 'seed' + _seed + '.csv')
