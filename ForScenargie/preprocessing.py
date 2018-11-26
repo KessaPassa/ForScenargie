@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 import openpyxl as px
+import env
 
 ROOT_DIR_PATH = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
-MAX_SEED_COUNT = 3
+
 
 ROOT_DIR_NAME = 'map1_add_census'
 CHILD_DIR = 'mobility-seed_'
@@ -84,7 +85,7 @@ if __name__ == '__main__':
     make_area_mesh()
 
     dir_list = ['2_8', '4_6', '6_4', '8_2']
-    seed_list = [str(123 + i) for i in range(MAX_SEED_COUNT)]
+    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT)]
 
     for _dir in dir_list:
         for _seed in seed_list:
@@ -100,7 +101,8 @@ if __name__ == '__main__':
             reader = reader[reader['area'] != -1]
             # 出力 *道路交通センサスにはjupyterで整形するので基本形のみでおけ
             reader.to_csv(get_write_file_path() + 'logs/' + _dir + 'seed' + _seed + '.csv',
-                          index=None)
+                          index=None,
+                          encoding='Shift_JISx0213')
 
 
             # # roadにcensusがついている行のみ抽出
