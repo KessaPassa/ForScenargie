@@ -2,11 +2,9 @@ import pandas as pd
 import numpy as np
 import openpyxl as px
 
-READ_DIR_PATH = 'C:/Users/admin/Documents/Scenargie/2018_IWIN/case/'
-WRITE_DIR_PATH = 'C:/Users/admin/Documents/Scenargie/2018_IWIN/case/'
+ROOT_DIR_PATH = 'C:/Users/admin/Documents/Scenargie/2018_IWIN/case/'
 
 ROOT_DIR_NAME = 'map1_add_census'
-DIR_LIST = ['2_8', '4_6', '6_4', '8_2']
 CHILD_DIR = 'mobility-seed_'
 CSV_FILE_NAME = 'log.csv'
 
@@ -49,12 +47,12 @@ class Area:
 
 
 # ファイルパスを返す
-def get_read_file_path(dir_list, seed):
-    return READ_DIR_PATH + ROOT_DIR_NAME + '/' + dir_list + '/' + CHILD_DIR + str(seed) + '/' + CSV_FILE_NAME
+def get_read_file_path(_dir, _seed):
+    return ROOT_DIR_PATH + ROOT_DIR_NAME + '/' + _dir + '/' + CHILD_DIR + _seed + '/' + CSV_FILE_NAME
 
 
 def get_write_file_path():
-    return WRITE_DIR_PATH + ROOT_DIR_NAME + '/'
+    return ROOT_DIR_NAME + ROOT_DIR_NAME + '/'
 
 
 # area0を左下起点にメッシュ範囲を作成
@@ -82,15 +80,15 @@ def set_area_id(df):
 
 # Scenargieのoutput dataがあるPCで実行すること
 if __name__ == '__main__':
-    wb = px.Workbook()
-    ws = wb.active
-
     make_area_mesh()
 
-    for dir_list in DIR_LIST:
-        for seed in range(123, 132 + 1):
+    dir_list = ['2_8', '4_6', '6_4', '8_2']
+    seed_list = [str(123 + i) for i in range(10)]
+
+    for _dir in dir_list:
+        for _seed in seed_list:
             # ただのshift-jisではダメ
-            tmp = pd.read_csv(get_read_file_path(dir_list, seed), names=COLUMNS, encoding='Shift_JISx0213')
+            tmp = pd.read_csv(get_read_file_path(_dir, _seed), names=COLUMNS, encoding='Shift_JISx0213')
 
             # 上書きしないようにコピーする
             reader = tmp.copy()
@@ -100,7 +98,7 @@ if __name__ == '__main__':
             # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
             reader = reader[reader['area'] != -1]
             # 出力 *道路交通センサスにはjupyterで整形するので基本形のみでおけ
-            reader.to_csv(get_write_file_path() + 'logs/' + dir_list + 'seed' + str(seed) + '.csv',
+            reader.to_csv(get_write_file_path() + 'logs/' + _dir + 'seed' + _seed + '.csv',
                           index=None,
                           encoding='Shift_JISx0213')
 
