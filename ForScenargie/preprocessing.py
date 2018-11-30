@@ -48,11 +48,11 @@ class Area:
 
 
 # ファイルパスを返す
-def get_read_file_path(_dir, _seed):
+def get_read_path(_dir, _seed):
     return ROOT_DIR_PATH + ROOT_DIR_NAME + '/' + _dir + '/' + CHILD_DIR + _seed + '/' + CSV_FILE_NAME
 
 
-def get_write_file_path():
+def get_write_path():
     return ROOT_DIR_PATH + ROOT_DIR_NAME + '/'
 
 
@@ -79,6 +79,26 @@ def set_area_id(df):
             'area'] = area[index].get_id
 
 
+# 到着時間も含まれているので1時間ごとの時間に補完する
+def apply_time(time):
+    times_list = [3600 * (i + 1) for i in range(6)]
+
+    if times_list.index(time) == 0:
+        return time
+    elif 0 < time < times_list[0]:
+        return times_list[0]
+    elif times_list[0] < time < times_list[1]:
+        return times_list[1]
+    elif times_list[1] < time < times_list[2]:
+        return times_list[2]
+    elif times_list[2] < time < times_list[3]:
+        return times_list[3]
+    elif times_list[3] < time < times_list[4]:
+        return times_list[4]
+    elif times_list[4] < time < times_list[5]:
+        return times_list[5]
+
+
 # Scenargieのoutput dataがあるPCで実行すること
 if __name__ == '__main__':
     make_area_mesh()
@@ -89,7 +109,8 @@ if __name__ == '__main__':
     for _dir in dir_list:
         for _seed in seed_list:
             # ただのshift-jisではダメ
-            tmp = pd.read_csv(get_read_file_path(_dir, _seed), names=COLUMNS, encoding='Shift_JISx0213')
+            tmp = pd.read_csv(get_read_path(_dir, _seed), names=COLUMNS, encoding='Shift_JISx0213')
+            tmp = tmp['time'].apply(apply_time)
 
             # 上書きしないようにコピーする
             reader = tmp.copy()
@@ -99,8 +120,9 @@ if __name__ == '__main__':
             # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
             reader = reader[reader['area'] != -1]
             # 出力 *道路交通センサスにはjupyterで整形するので基本形のみでおけ
-            reader.to_csv(get_write_file_path() + 'logs/' + _dir + 'seed' + _seed + '.csv',
-                          index=None)
+            reader.to_csv(get_write_path() + 'logs/' + _dir + 'seed' + _seed + '.csv',
+                          index=None,
+                          encoding='Shift_JISx0213')
 
 
             # # roadにcensusがついている行のみ抽出
