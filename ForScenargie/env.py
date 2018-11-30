@@ -1,4 +1,2 @@
-ROOT_DIR = '/Users/kessapassa/OneDrive/research_log/logs/'
-
-def hoge():
-    print('joge')
+ROOT_DIR = '/Users/kessapassa/OneDrive/research_log/2018_Graduate/'
+MAX_SEED_COUNT = 1

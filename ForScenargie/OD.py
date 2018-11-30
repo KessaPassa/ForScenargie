@@ -11,6 +11,7 @@ def get_write_path():
     return env.ROOT_DIR + 'OD/'
 
 
+# 出力元となるdataframeの雛形
 def create_base_dataframe():
     times_list = [3600 * (i + 1) for i in range(6)]
     columns = ['id', 'type']
@@ -20,18 +21,14 @@ def create_base_dataframe():
     return df
 
 
+# idを元に時間別所在エリアを記述
 def distribute_od(base, read):
     """
     :type base: pd.DataFrame
     :type read: pd.DataFrame
     """
 
-    tmp_dic = {}
-    # rの配列番号対応 {id: 0, type: 1, time: 2, area: 3}
     for value in np.asanyarray(read):
-        tmp_dic[str(value[0])] = value
-
-    for key, value in tmp_dic.items():
         row = base.loc[base['id'] == value[0]]
 
         # もし空なら新しく行を作成し、追加
@@ -47,15 +44,12 @@ def distribute_od(base, read):
 
         # 既に同じIDがあるなら時間帯のエリアを追加
         else:
-            # print('エルス')
             base.loc[row.index, ['type', value[2]]] = [value[1], value[3]]
-            print(base.loc[row.index, ['type', value[2]]])
-            # row['type'] = value[1]
-            # row[str(value[2])] = value[3]
 
     return base
 
 
+# 時間のindexとリストを返す
 def split_type(time):
     times_list = [3600 * (i + 1) for i in range(6)]
     index = times_list.index(time)
@@ -74,12 +68,13 @@ if __name__ == '__main__':
     # df_base = df_base.append(hoge, ignore_index=True)
 
     dir_list = ['2_8', '4_6', '6_4', '8_2']
-    seed_list = [str(123 + i) for i in range(10)]
+    # dir_list = ['6_4']
+    seed_list = [str(123 + i) for i in range(3)]
 
     for _dir in dir_list:
         for _seed in seed_list:
             # print(_dir + '_seed' + _seed)
-            df_read = pd.read_csv(get_read_path() + _dir + '_seed' + _seed + '.csv',
+            df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '.csv',
                                   encoding='Shift_JISx0213')
             df_read = df_read.loc[:, ['id', 'type', 'time', 'area']]
             result = distribute_od(df_base.copy(), df_read)

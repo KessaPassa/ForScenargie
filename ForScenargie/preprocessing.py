@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 import openpyxl as px
+import env
 
 ROOT_DIR_PATH = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
-MAX_SEED_COUNT = 3
+
 
 ROOT_DIR_NAME = 'map1_add_census'
 CHILD_DIR = 'mobility-seed_'
@@ -66,24 +67,11 @@ def make_area_mesh():
         # print(vars(area[index]))
 
 
-# 新しく作成したareaカラムにメッシュ番号を入力する
-def set_area_id(df):
-    """
-    :type df: pd.DataFrame
-    """
-    df['area'] = -1
-    for index in range(MAX_AREA_COUNT):
-        df.loc[
-            (area[index].get_x - RADIUS <= df['x']) & (df['x'] <= area[index].get_x + RADIUS) &
-            (area[index].get_y - RADIUS <= df['y']) & (df['y'] <= area[index].get_y + RADIUS),
-            'area'] = area[index].get_id
-
-
-# 到着時間も含まれているので1時間ごとの時間に補完する
-def apply_time(time):
+# 到着時間も含まれているので1時間ごとの時間に補間する
+def interpolate_time(time):
     times_list = [3600 * (i + 1) for i in range(6)]
 
-    if times_list.index(time) == 0:
+    if time in times_list:
         return time
     elif 0 < time < times_list[0]:
         return times_list[0]
@@ -99,30 +87,49 @@ def apply_time(time):
         return times_list[5]
 
 
+# 新しく作成したareaカラムにメッシュ番号を入力する
+def set_area_id(df):
+    """
+    :type df: pd.DataFrame
+    """
+    df['area'] = -1
+    for index in range(MAX_AREA_COUNT):
+        df.loc[
+            (area[index].get_x - RADIUS <= df['x']) & (df['x'] <= area[index].get_x + RADIUS) &
+            (area[index].get_y - RADIUS <= df['y']) & (df['y'] <= area[index].get_y + RADIUS),
+            'area'] = area[index].get_id
+
+
+
 # Scenargieのoutput dataがあるPCで実行すること
 if __name__ == '__main__':
     make_area_mesh()
 
     dir_list = ['2_8', '4_6', '6_4', '8_2']
-    seed_list = [str(123 + i) for i in range(MAX_SEED_COUNT)]
+    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT)]
 
     for _dir in dir_list:
         for _seed in seed_list:
             # ただのshift-jisではダメ
-            tmp = pd.read_csv(get_read_path(_dir, _seed), names=COLUMNS, encoding='Shift_JISx0213')
-            tmp = tmp['time'].apply(apply_time)
+            df = pd.read_csv(get_read_path(_dir, _seed), names=COLUMNS, encoding='Shift_JISx0213')
+
 
             # 上書きしないようにコピーする
-            reader = tmp.copy()
+            reader = df.copy()
             # 新しくarea列を追加
             set_area_id(reader)
 
             # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
             reader = reader[reader['area'] != -1]
+
+            # time列を補間
+            reader['time'] = reader['time'].apply(interpolate_time)
+
             # 出力 *道路交通センサスにはjupyterで整形するので基本形のみでおけ
             reader.to_csv(get_write_path() + 'logs/' + _dir + 'seed' + _seed + '.csv',
                           index=None,
                           encoding='Shift_JISx0213')
+            print(_dir + 'seed' + _seed + '.csv')
 
 
             # # roadにcensusがついている行のみ抽出
