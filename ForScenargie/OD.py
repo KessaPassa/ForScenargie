@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import threading
 import env
 
 
@@ -62,21 +63,31 @@ def split_type(time):
     return index, times_list
 
 
+def multi_thread(_dir, _seed):
+    # print(_dir + '_seed' + _seed)
+    df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '.csv',
+                          encoding='Shift_JISx0213')
+    df_read = df_read.loc[:, ['id', 'type', 'time', 'area']]
+    result = distribute_od(df_base.copy(), df_read)
+    result.to_csv(get_write_path() + _dir + 'seed' + _seed + '.csv')
+    print(_dir + 'seed' + _seed + '.csv')
+
+
 if __name__ == '__main__':
     df_base = create_base_dataframe()
     # hoge = pd.Series([62378, 'Vehicles', 21, 22, 23, 24, np.nan, 26], index=df_base.columns)
     # df_base = df_base.append(hoge, ignore_index=True)
 
     dir_list = ['2_8', '4_6', '6_4', '8_2']
-    # dir_list = ['6_4']
-    seed_list = [str(123 + i) for i in range(3)]
+    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT)]
 
     for _dir in dir_list:
         for _seed in seed_list:
-            # print(_dir + '_seed' + _seed)
-            df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '.csv',
-                                  encoding='Shift_JISx0213')
-            df_read = df_read.loc[:, ['id', 'type', 'time', 'area']]
-            result = distribute_od(df_base.copy(), df_read)
-            result.to_csv(get_write_path() + _dir + 'seed' + _seed + '.csv')
-            print(_dir + 'seed' + _seed + '.csv')
+            thread = threading.Thread(target=multi_thread(_dir, _seed))
+            thread.start()
+            # df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '.csv',
+            #                       encoding='Shift_JISx0213')
+            # df_read = df_read.loc[:, ['id', 'type', 'time', 'area']]
+            # result = distribute_od(df_base.copy(), df_read)
+            # result.to_csv(get_write_path() + _dir + 'seed' + _seed + '.csv')
+            # print(_dir + 'seed' + _seed + '.csv')

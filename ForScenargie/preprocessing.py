@@ -5,7 +5,6 @@ import env
 
 ROOT_DIR_PATH = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
 
-
 ROOT_DIR_NAME = 'map1_add_census'
 CHILD_DIR = 'mobility-seed_'
 CSV_FILE_NAME = 'log.csv'
@@ -87,6 +86,15 @@ def interpolate_time(time):
         return times_list[5]
 
 
+# エリア番号を線形的な数から、iとjで回した数のようにする
+def convert_area_to_contour(area_id):
+    area_id = int(area_id)
+    contour_id = str(area_id // 6)
+    contour_id += str(area_id % 6) + '0'
+
+    return contour_id
+
+
 # 新しく作成したareaカラムにメッシュ番号を入力する
 def set_area_id(df):
     """
@@ -97,8 +105,7 @@ def set_area_id(df):
         df.loc[
             (area[index].get_x - RADIUS <= df['x']) & (df['x'] <= area[index].get_x + RADIUS) &
             (area[index].get_y - RADIUS <= df['y']) & (df['y'] <= area[index].get_y + RADIUS),
-            'area'] = area[index].get_id
-
+            'area'] = convert_area_to_contour(area[index].get_id)
 
 
 # Scenargieのoutput dataがあるPCで実行すること
@@ -112,7 +119,6 @@ if __name__ == '__main__':
         for _seed in seed_list:
             # ただのshift-jisではダメ
             df = pd.read_csv(get_read_path(_dir, _seed), names=COLUMNS, encoding='Shift_JISx0213')
-
 
             # 上書きしないようにコピーする
             reader = df.copy()
@@ -130,7 +136,6 @@ if __name__ == '__main__':
                           index=None,
                           encoding='Shift_JISx0213')
             print(_dir + 'seed' + _seed + '.csv')
-
 
             # # roadにcensusがついている行のみ抽出
             # reader = reader[reader['road'].str.contains('census')]
