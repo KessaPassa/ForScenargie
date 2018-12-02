@@ -89,7 +89,7 @@ def interpolate_time(time):
     elif times_list[4] < time < times_list[5]:
         times = times_list[5]
 
-    return times, is_arrived
+    return pd.Series([times, is_arrived])
 
 # エリア番号を線形的な数から、iとjで回した数のようにする
 def convert_area_to_contour(area_id):
@@ -133,10 +133,11 @@ if __name__ == '__main__':
             # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
             reader = reader[reader['area'] != -1]
 
+            # 到着したときに取得したのなら == 1時間ごとの時間以外なら: Trueとなる
             reader['is_arrived'] = False
 
             # time列を補間
-            reader[['time', 'is_arrived']] = reader[['time', 'is_arrived']].apply(interpolate_time)
+            reader[['time', 'is_arrived']] = reader['time'].apply(interpolate_time)
 
             # 出力 *道路交通センサスにはjupyterで整形するので基本形のみでおけ
             reader.to_csv(get_write_path() + 'logs/' + _dir + 'seed' + _seed + '.csv',

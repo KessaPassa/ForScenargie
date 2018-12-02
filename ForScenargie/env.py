@@ -8,4 +8,4 @@ elif os_name == 'nt':
     ROOT_DIR = 'C:/Users/admin/OneDrive/research_log/2018_Graduate/'
 
 
-MAX_SEED_COUNT = 1
+MAX_SEED_COUNT = 3
