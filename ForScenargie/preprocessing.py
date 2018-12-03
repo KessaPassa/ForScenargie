@@ -133,7 +133,7 @@ if __name__ == '__main__':
             # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
             reader = reader[reader['area'] != -1]
 
-            # 到着したときに取得したのなら == 1時間ごとの時間以外なら: Trueとなる
+            # 到着したときに取得したのなら == 1時間ごとの時間以外なら: Trueとなるgit
             reader['is_arrived'] = False
 
             # time列を補間

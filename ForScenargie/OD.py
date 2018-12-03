@@ -17,6 +17,7 @@ def create_base_dataframe():
     times_list = [3600 * (i + 1) for i in range(6)]
     columns = ['id', 'type']
     columns.extend(times_list)
+    columns.extend(['is_arrived'])
 
     df = pd.DataFrame(columns=columns)
     return df
@@ -28,7 +29,6 @@ def distribute_od(base, read):
     :type base: pd.DataFrame
     :type read: pd.DataFrame
     """
-
     for value in np.asanyarray(read):
         row = base.loc[base['id'] == value[0]]
 
@@ -39,6 +39,7 @@ def distribute_od(base, read):
             index, times_list = split_type(value[2])
             times_list[index] = value[3]
             columns_list.extend(times_list)
+            columns_list.extend([value[4]])
 
             tmp = pd.Series(columns_list, index=base.columns)
             base = base.append(tmp, ignore_index=True)
@@ -67,7 +68,7 @@ def multi_thread(_dir, _seed):
     # print(_dir + '_seed' + _seed)
     df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '.csv',
                           encoding='Shift_JISx0213')
-    df_read = df_read.loc[:, ['id', 'type', 'time', 'area']]
+    df_read = df_read.loc[:, ['id', 'type', 'time', 'area', 'is_arrived']]
     result = distribute_od(df_base.copy(), df_read)
     result.to_csv(get_write_path() + _dir + 'seed' + _seed + '.csv')
     print(_dir + 'seed' + _seed + '.csv')
