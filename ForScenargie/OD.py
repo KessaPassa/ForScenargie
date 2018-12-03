@@ -64,12 +64,56 @@ def split_type(time):
     return index, times_list
 
 
+def find_not_nan_index(_list):
+    index = -1
+
+    for key, value in enumerate(_list):
+        if not np.isnan(value):
+            index = key
+
+    return index
+
+
+def interpolate_times(df):
+    # convert_dic = {
+    #     '3600': 0,
+    #     '21600': 5,
+    #     'is_arrived': 6
+    # }
+
+    new_times = []
+    for row in np.asanyarray(df):
+        times = np.delete(row, -1)
+
+        if np.isnan(times[0]):
+            index = find_not_nan_index(times)
+            for i in range(0, index):
+                times[i] = times[index]
+
+        if row[6] == True:
+            times = times[::-1]
+            index = find_not_nan_index(times)
+            for i in range(0, index):
+                times[i] = times[index]
+            times = times[::-1]
+
+        new_times.append(times)
+
+    return pd.DataFrame(new_times)
+
+
 def multi_thread(_dir, _seed):
     # print(_dir + '_seed' + _seed)
     df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '.csv',
                           encoding='Shift_JISx0213')
     df_read = df_read.loc[:, ['id', 'type', 'time', 'area', 'is_arrived']]
     result = distribute_od(df_base.copy(), df_read)
+
+    times_list = [str(3600 * (i + 1)) for i in range(6)]
+    result = result.loc[result['type'] == ' Vehicle']
+    result[times_list] = interpolate_times(result[times_list + ['is_arrived']])
+    result.dropna(how='any', inplace=True)
+
     result.to_csv(get_write_path() + _dir + 'seed' + _seed + '.csv')
     print(_dir + 'seed' + _seed + '.csv')
 
