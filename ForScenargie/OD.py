@@ -125,7 +125,8 @@ if __name__ == '__main__':
     # hoge = pd.Series([62378, 'Vehicles', 21, 22, 23, 24, np.nan, 26], index=df_base.columns)
     # df_base = df_base.append(hoge, ignore_index=True)
 
-    dir_list = ['2_8', '4_6', '6_4', '8_2']
+    # dir_list = ['2_8', '4_6', '6_4', '8_2']
+    dir_list = ['4_6', '6_4', '8_2']
     seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT)]
 
     for _dir in dir_list:
