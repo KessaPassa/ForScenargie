@@ -64,6 +64,7 @@ def split_type(time):
     return index, times_list
 
 
+# NaNではない最初のindexを返す
 def find_not_nan_index(_list):
     index = -1
 
@@ -74,6 +75,7 @@ def find_not_nan_index(_list):
     return index
 
 
+# 最初に出現していなければ、家に居たものと見て補間。1時間ごとの時間以外を取得していれば消えたことなので、目的地について遊んでいると見て補間
 def interpolate_times(df):
     # convert_dic = {
     #     '3600': 0,
