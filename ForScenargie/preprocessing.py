@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import openpyxl as px
 import env
 
 ROOT_DIR_PATH = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
