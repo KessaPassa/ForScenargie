@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import openpyxl as px
 import env
 
 ROOT_DIR_PATH = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
@@ -90,6 +89,7 @@ def interpolate_time(time):
         times = times_list[5]
 
     return pd.Series([times, is_arrived])
+
 
 # エリア番号を線形的な数から、iとjで回した数のようにする
 def convert_area_to_contour(area_id):
