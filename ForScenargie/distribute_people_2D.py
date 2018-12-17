@@ -25,13 +25,14 @@ def distribute_people(base, main):
     """
     df_new = pd.DataFrame()
 
+    # グルーピングすることでforが回る数を減らし高速化
     group_list = main.groupby(['time'])
     for _name, _group in group_list:
+        # 同じ時間帯のみコピーで取り出す
         tmp = base.loc[base['time'] == _name].copy()
         for g in np.asanyarray(_group):
             # {id, type, is_arrived, time, road, x, y, area}
             # 3はtime, 7はarea
-            # print(tmp.loc[tmp['area'] == g[7], 'people'])
             tmp.loc[tmp['area'] == g[7], 'people'] += 1
         df_new = pd.concat([df_new, tmp])
 
