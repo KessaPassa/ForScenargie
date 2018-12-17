@@ -39,6 +39,7 @@ def distribute_people(base, main):
     return df_new
 
 
+# 出力するフォーマットのベースを作る
 def create_people_dataframe():
     times_length = 6
     area_length = 36
