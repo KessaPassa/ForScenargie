@@ -2,12 +2,16 @@ import pandas as pd
 import numpy as np
 import env
 
-ROOT_DIR = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
+ROOT_DIR_PATH = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
+
+ROOT_DIR_NAME = 'map1_add_census'
 CHILD_DIR = 'mobility-seed_'
+CSV_FILE_NAME = 'log.csv'
 
 MAX_AREA_COUNT = 36
 MAX_TIME_COUNT = 6
 TIME_PER_SPLIT = 3600
+COLUMNS = ['id', 'type', 'time', 'road', 'x', 'y']
 
 X_ZERO_AREA_POS = -8700
 Y_ZERO_AREA_POS = -9250
@@ -43,12 +47,12 @@ class Area:
 
 
 # ファイルパスを返す
-def get_read_path(_dir, _seed, _csv):
-    return ROOT_DIR + _dir + '/' + _dir + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
+def get_read_path(_dir, _seed):
+    return ROOT_DIR_PATH + ROOT_DIR_NAME + '/' + _dir + '/' + CHILD_DIR + _seed + '/' + CSV_FILE_NAME
 
 
-def get_write_path(_dir):
-    return ROOT_DIR + 'logs/'
+def get_write_path():
+    return ROOT_DIR_PATH + ROOT_DIR_NAME + '/'
 
 
 # area0を左下起点にメッシュ範囲を作成
@@ -64,10 +68,13 @@ def make_area_mesh():
 # 到着時間も含まれているので1時間ごとの時間に補間する
 def interpolate_time(time):
     times_list = [3600 * (i + 1) for i in range(6)]
+
     times = []
+    is_arrived = True
 
     if time in times_list:
         times = time
+        is_arrived = False
     elif 0 < time < times_list[0]:
         times = times_list[0]
     elif times_list[0] < time < times_list[1]:
@@ -81,7 +88,15 @@ def interpolate_time(time):
     elif times_list[4] < time < times_list[5]:
         times = times_list[5]
 
-    return pd.Series(times)
+    return pd.Series([times, is_arrived])
+
+# # エリア番号を線形的な数から、iとjで回した数のようにする
+# def convert_area_to_contour(area_id):
+#     area_id = int(area_id)
+#     contour_id = str(area_id // 6)
+#     contour_id += str(area_id % 6) + '0'
+#
+#     return contour_id
 
 
 # 新しく作成したareaカラムにメッシュ番号を入力する
@@ -101,30 +116,37 @@ def set_area_id(df):
 if __name__ == '__main__':
     make_area_mesh()
 
-    columns = ['id', 'type', 'is_arrived', 'time', 'road', 'x', 'y']
-    dir_list = ['people10000', 'people20000', 'people30000']
-    csv_list = ['census', 'mobile']
+    dir_list = ['2_8', '4_6', '6_4', '8_2']
     seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT)]
 
     for _dir in dir_list:
         for _seed in seed_list:
-            for _csv in csv_list:
-                # ただのshift-jisではダメ
-                df = pd.read_csv(get_read_path(_dir, _seed, _csv), names=columns, encoding='Shift_JISx0213')
+            # ただのshift-jisではダメ
+            df = pd.read_csv(get_read_path(_dir, _seed), names=COLUMNS, encoding='Shift_JISx0213')
 
-                # 上書きしないようにコピーする
-                reader = df.copy()
-                # 新しくarea列を追加
-                set_area_id(reader)
+            # 上書きしないようにコピーする
+            reader = df.copy()
+            # 新しくarea列を追加
+            set_area_id(reader)
 
-                # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
-                reader = reader[reader['area'] != -1]
+            # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
+            reader = reader[reader['area'] != -1]
 
-                # time列を補間
-                reader['time'] = reader['time'].apply(interpolate_time)
-                # reader['time'] = reader.loc[reader['is_arrived'] == True, reader['time'].apply(interpolate_time)]
+            # 到着したときに取得したのなら == 1時間ごとの時間以外なら: Trueとなるgit
+            reader['is_arrived'] = False
 
-                reader.to_csv(get_write_path(_dir) + _dir + 'seed' + _seed + '_' + _csv + '.csv',
-                              index=None,
-                              encoding='Shift_JISx0213')
-                print(_dir + 'seed' + _seed + '_' + _csv + '.csv')
+            # time列を補間
+            reader[['time', 'is_arrived']] = reader['time'].apply(interpolate_time)
+
+            # 出力 *道路交通センサスにはjupyterで整形するので基本形のみでおけ
+            reader.to_csv(get_write_path() + 'logs/' + _dir + 'seed' + _seed + '.csv',
+                          index=None,
+                          encoding='Shift_JISx0213')
+            print(_dir + 'seed' + _seed + '.csv')
+
+            # # roadにcensusがついている行のみ抽出
+            # reader = reader[reader['road'].str.contains('census')]
+            # # 道路交通センサス用に出力
+            # reader.to_csv(get_write_file_path() + 'logs/census' + dir_list + '_' + 'seed' + str(seed) + '.csv',
+            #               index=None,
+            #               encoding='Shift_JISx0213')

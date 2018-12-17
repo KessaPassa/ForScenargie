@@ -1,6 +1,8 @@
+import os
 import pandas as pd
 import numpy as np
 import env
+import time
 
 
 def get_read_path():
@@ -8,21 +10,33 @@ def get_read_path():
 
 
 def get_write_path():
-    return env.ROOT_DIR + '2D/'
+    path = env.ROOT_DIR + '2D/'
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
+    return path
 
 
 # エリアと時間別に人数を+1ずつしていく
-def distribute_people(df, value):
+def distribute_people(base, main):
     """
-    :type df: pd.DataFrame
-    :type value: pd.DataFrame
+    :type base: pd.DataFrame
+    :type main: pd.DataFrame
     """
-    for r in np.asanyarray(value):
-        # 2はtime, 6はarea
-        df.loc[
-            (df['time'] == r[2]) & (df['area'] == r[6]),
-            'people'] += 1
-    return df
+    df_new = pd.DataFrame()
+
+    # グルーピングすることでforが回る数を減らし高速化
+    group_list = main.groupby(['time'])
+    for _name, _group in group_list:
+        # 同じ時間帯のみコピーで取り出す
+        tmp = base.loc[base['time'] == _name].copy()
+        for g in np.asanyarray(_group):
+            # {id, type, is_arrived, time, road, x, y, area}
+            # 3はtime, 7はarea
+            tmp.loc[tmp['area'] == g[7], 'people'] += 1
+        df_new = pd.concat([df_new, tmp])
+
+    return df_new
 
 
 def create_people_dataframe():
@@ -33,8 +47,8 @@ def create_people_dataframe():
     people_dataframe = pd.DataFrame(people_dataframe, columns=['time', 'area', 'people'])
 
     index = 0
-    for time in range(0, times_length):
-        for area in range(0, area_length):
+    for time in range(times_length):
+        for area in range(area_length):
             people_dataframe.loc[index, ['time', 'area']] = [[3600 * (time + 1), area]]
             index += 1
 
@@ -44,24 +58,23 @@ def create_people_dataframe():
 if __name__ == '__main__':
     df_base = create_people_dataframe()
 
-    # 自動車と歩行者の割合
-    dir_list = ['2_8', '4_6', '6_4', '8_2']
+    dir_list = ['people10000', 'people20000', 'people30000']
+    csv_list = ['census', 'mobile']
+    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT)]
 
-    for dir in dir_list:
-        # seedを全てプラスして格納する箱を初期化しとく
+    for _dir in dir_list:
+        for _seed in seed_list:
+            for _csv in csv_list:
+                main_csv = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv',
+                                       encoding='Shift_JISx0213',
+                                       dtype=None,
+                                       delimiter=',')
 
-        for seed in range(123, 132 + 1):
-            main_csv = pd.read_csv(get_read_path() + dir + '_seed' + str(seed) + '.csv',
-                                   encoding='Shift_JISx0213',
-                                   dtype=None,
-                                   delimiter=',')
-            mobile = main_csv.copy()
-            census = main_csv[main_csv['road'].str.contains('census')]
-            vehicles = main_csv[main_csv['type'] == ' Vehicle']
-            pedestrians = main_csv[main_csv['type'] == ' Pedestrian']
+                start = time.time()
 
-            csv_list = {'mobile': mobile, 'census': census, 'vehicles': vehicles, 'pedestrians': pedestrians}
-            for key, value in csv_list.items():
-                output = distribute_people(df_base.copy(), value)
-                output.to_csv(get_write_path() + str(key) + dir + '_seed' + str(seed) + '.csv')
-                print(str(key) + dir + '_seed' + str(seed) + '.csv')
+                output = distribute_people(df_base.copy(), main_csv)
+                output.to_csv(get_write_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv')
+                print(_dir + 'seed' + _seed + _csv + '.csv')
+
+                elapsed_time = time.time() - start
+                print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
