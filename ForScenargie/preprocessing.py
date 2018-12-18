@@ -1,6 +1,9 @@
+import os
+import shutil
 import pandas as pd
 import numpy as np
 import env
+import time
 
 ROOT_DIR = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
 CHILD_DIR = 'mobility-seed_'
@@ -47,7 +50,7 @@ def get_read_path(_dir, _seed, _csv):
     return ROOT_DIR + _dir + '/' + _dir + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
 
 
-def get_write_path(_dir):
+def get_write_path():
     return ROOT_DIR + 'logs/'
 
 
@@ -109,22 +112,35 @@ if __name__ == '__main__':
     for _dir in dir_list:
         for _seed in seed_list:
             for _csv in csv_list:
+                start = time.time()
                 # ただのshift-jisではダメ
                 df = pd.read_csv(get_read_path(_dir, _seed, _csv), names=columns, encoding='Shift_JISx0213')
 
                 # 上書きしないようにコピーする
                 reader = df.copy()
+
                 # 新しくarea列を追加
                 set_area_id(reader)
 
                 # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
                 reader = reader[reader['area'] != -1]
 
+                # road列から(census)を取り除く
+                reader['road'] = reader['road'].apply(lambda x: x.split('(census)')[0])
+
                 # time列を補間
                 reader['time'] = reader['time'].apply(interpolate_time)
-                # reader['time'] = reader.loc[reader['is_arrived'] == True, reader['time'].apply(interpolate_time)]
 
-                reader.to_csv(get_write_path(_dir) + _dir + 'seed' + _seed + '_' + _csv + '.csv',
+                reader.to_csv(get_write_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv',
                               index=None,
                               encoding='Shift_JISx0213')
                 print(_dir + 'seed' + _seed + '_' + _csv + '.csv')
+                elapsed_time = time.time() - start
+                print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
+
+    # OneDriveにコピーする。その際すでにOriginフォルダがあるなら削除してからコピー
+    copy_dir = env.ROOT_DIR + 'Origin'
+    if os.path.exists(copy_dir):
+        shutil.rmtree(copy_dir)
+    shutil.copytree(get_write_path(), copy_dir)
+    print('作業ディレクトリにコピー完了')
