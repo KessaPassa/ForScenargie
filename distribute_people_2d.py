@@ -6,11 +6,11 @@ import time
 
 
 def get_read_path():
-    return env.ROOT_DIR + 'Origin/'
+    return env.ROOT_DIR() + 'Origin/'
 
 
 def get_write_path():
-    path = env.ROOT_DIR + '2D/'
+    path = env.ROOT_DIR() + '2D/'
     if not os.path.isdir(path):
         os.makedirs(path)
 
@@ -33,7 +33,7 @@ def distribute_people(base, read):
         for g in np.asanyarray(_group):
             # {id, type, is_arrived, time, road, x, y, area}
             # 3はtime, 7はarea
-            tmp.loc[tmp['area'] == g[7], 'people'] += 1
+            tmp.loc[tmp['area'] == g[-1], 'people'] += 1
         df_new = pd.concat([df_new, tmp])
 
     return df_new
@@ -60,8 +60,8 @@ if __name__ == '__main__':
     df_base = create_people_dataframe()
 
     dir_list = ['people10000', 'people20000', 'people30000']
+    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT())]
     csv_list = ['census', 'mobile']
-    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT)]
 
     for _dir in dir_list:
         for _seed in seed_list:
@@ -74,7 +74,8 @@ if __name__ == '__main__':
                 start = time.time()
 
                 output = distribute_people(df_base.copy(), df_read)
-                output.to_csv(get_write_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv')
+                output.to_csv(get_write_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv',
+                              index=False)
                 print(_dir + 'seed' + _seed + _csv + '.csv')
 
                 elapsed_time = time.time() - start

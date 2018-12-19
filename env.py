@@ -1,11 +1,13 @@
 import os
 
-os_name = os.name
-ROOT_DIR = ''
-if os_name == 'ponix':
-    ROOT_DIR = '/Users/kessapassa/OneDrive/research_log/2018_Graduate/'
-elif os_name == 'nt':
-    ROOT_DIR = 'C:/Users/admin/OneDrive/research_log/2018_Graduate/'
+
+def ROOT_DIR():
+    os_name = os.name
+    if os_name == 'posix':
+        return '/Users/kessapassa/OneDrive/research_log/2018_Graduate/'
+    elif os_name == 'nt':
+        return 'C:/Users/admin/OneDrive/research_log/2018_Graduate/'
 
 
-MAX_SEED_COUNT = 3
+def MAX_SEED_COUNT():
+    return 3

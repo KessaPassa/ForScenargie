@@ -106,8 +106,8 @@ if __name__ == '__main__':
 
     columns = ['id', 'type', 'is_arrived', 'time', 'road', 'x', 'y']
     dir_list = ['people10000', 'people20000', 'people30000']
+    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT())]
     csv_list = ['census', 'mobile']
-    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT)]
 
     for _dir in dir_list:
         for _seed in seed_list:
@@ -139,7 +139,7 @@ if __name__ == '__main__':
                 print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
 
     # OneDriveにコピーする。その際すでにOriginフォルダがあるなら削除してからコピー
-    copy_dir = env.ROOT_DIR + 'Origin'
+    copy_dir = env.ROOT_DIR() + 'Origin'
     if os.path.exists(copy_dir):
         shutil.rmtree(copy_dir)
     shutil.copytree(get_write_path(), copy_dir)

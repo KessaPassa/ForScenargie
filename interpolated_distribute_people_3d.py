@@ -2,15 +2,14 @@ import os
 import pandas as pd
 import numpy as np
 import env
-import time
 
 
 def get_read_path():
-    return env.ROOT_DIR + '2D/'
+    return env.ROOT_DIR() + 'Interpolated_2D/'
 
 
 def get_write_path():
-    path = env.ROOT_DIR + '3D/'
+    path = env.ROOT_DIR() + 'Interpolated_3D/'
     if not os.path.isdir(path):
         os.makedirs(path)
 
@@ -29,13 +28,13 @@ def distribute_people(base, read):
     group_list = read.groupby(['time'])
     for _name, _group in group_list:
         # 同じ時間帯のみコピーで取り出す
-        tmp = base.loc[base['time'] == _name].copy()
-        print(_group)
-        for g in np.asanyarray(_group):
-            # {id, type, is_arrived, time, road, x, y, area}
-            # 3はtime, 7はarea
-            tmp.loc[tmp['area'] == g[1], 'people'] += g[2]
-        df_new = pd.concat([df_new, tmp])
+        tmp = base.loc[:, _name]
+        # print(_group)
+        # print(tmp)
+        for index, value in enumerate(np.asanyarray(_group)):
+            # print(value)
+            tmp[index] = value[1]
+        df_new = pd.concat([df_new, tmp], axis=1)
 
     return df_new
 
@@ -48,14 +47,15 @@ if __name__ == '__main__':
     df_base = create_people_dataframe()
 
     dir_list = ['people10000', 'people20000', 'people30000']
+    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT())]
     csv_list = ['census', 'mobile']
-    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT)]
 
     for _dir in dir_list:
         for _seed in seed_list:
             for _csv in csv_list:
-                print(get_read_path())
-                df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv')
-                output = distribute_people(df_base, df_read)
+                df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv', index_col=0)
+                output = distribute_people(df_base.copy(), df_read)
+                output.to_csv(get_write_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv')
+                print(_dir + 'seed' + _seed + _csv + '.csv')
 
 
