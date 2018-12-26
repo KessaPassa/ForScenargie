@@ -1,9 +1,7 @@
 import os
-import shutil
 import pandas as pd
 import numpy as np
 import env
-import time
 
 ROOT_DIR = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
 CHILD_DIR = 'mobility-seed_'
@@ -51,7 +49,11 @@ def get_read_path(_dir, _seed, _csv):
 
 
 def get_write_path():
-    return ROOT_DIR + 'logs/'
+    path = env.ROOT_DIR() + 'Origin/'
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
+    return path
 
 
 # area0を左下起点にメッシュ範囲を作成
@@ -112,7 +114,6 @@ if __name__ == '__main__':
     for _dir in dir_list:
         for _seed in seed_list:
             for _csv in csv_list:
-                start = time.time()
                 # ただのshift-jisではダメ
                 df = pd.read_csv(get_read_path(_dir, _seed, _csv), names=columns, encoding='Shift_JISx0213')
 
@@ -135,12 +136,10 @@ if __name__ == '__main__':
                               index=None,
                               encoding='Shift_JISx0213')
                 print(_dir + 'seed' + _seed + '_' + _csv + '.csv')
-                elapsed_time = time.time() - start
-                print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
 
-    # OneDriveにコピーする。その際すでにOriginフォルダがあるなら削除してからコピー
-    copy_dir = env.ROOT_DIR() + 'Origin'
-    if os.path.exists(copy_dir):
-        shutil.rmtree(copy_dir)
-    shutil.copytree(get_write_path(), copy_dir)
-    print('作業ディレクトリにコピー完了')
+    # # OneDriveにコピーする。その際すでにOriginフォルダがあるなら削除してからコピー
+    # copy_dir = env.ROOT_DIR() + 'Origin'
+    # if os.path.exists(copy_dir):
+    #     shutil.rmtree(copy_dir)
+    # shutil.copytree(get_write_path(), copy_dir)
+    # print('作業ディレクトリにコピー完了')
