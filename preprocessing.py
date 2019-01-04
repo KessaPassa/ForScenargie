@@ -45,7 +45,7 @@ class Area:
 
 # ファイルパスを返す
 def get_read_path(_dir, _seed, _csv):
-    return ROOT_DIR + _dir + '/' + _dir + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
+    return ROOT_DIR + _dir + '/' + '10_0' + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
 
 
 def get_write_path():

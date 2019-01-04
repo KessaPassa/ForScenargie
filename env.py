@@ -3,11 +3,12 @@ import os
 
 def ROOT_DIR():
     os_name = os.name
+    dir_name = '20190104'
     if os_name == 'posix':
-        return '/Users/kessapassa/OneDrive/research_log/20181227/'
+        return '/Users/kessapassa/OneDrive/research_log/' + dir_name + '/'
     elif os_name == 'nt':
-        return 'C:/Users/admin/OneDrive/research_log/20181227/'
+        return 'C:/Users/admin/OneDrive/research_log/' + dir_name + '/'
 
 
 def MAX_SEED_COUNT():
-    return 2
+    return 3
