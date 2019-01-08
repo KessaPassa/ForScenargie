@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
+import shutil
 import env
 
 ROOT_DIR = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
@@ -136,6 +137,9 @@ if __name__ == '__main__':
                               index=None,
                               encoding='Shift_JISx0213')
                 print(_dir + 'seed' + _seed + '_' + _csv + '.csv')
+
+            # od.csvはコピーでOneDriveへ移動
+            shutil.copyfile(get_read_path(_dir, _seed, 'od'), get_write_path() + _dir + 'seed' + _seed + '_' + 'od.csv')
 
     # # OneDriveにコピーする。その際すでにOriginフォルダがあるなら削除してからコピー
     # copy_dir = env.ROOT_DIR() + 'Origin'
