@@ -40,7 +40,7 @@ def distribute_people(base, read):
 
 
 def create_people_dataframe():
-    return pd.DataFrame(np.zeros((36, 6)), columns=[3600 * (i + 1) for i in range(6)])
+    return pd.DataFrame(np.zeros((36, 6)), columns=[1800 * (i + 1) for i in range(6)])
 
 
 if __name__ == '__main__':
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     for _dir in dir_list:
         for _seed in seed_list:
             for _csv in csv_list:
-                df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv')
+                df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv', index_col=0)
                 output = distribute_people(df_base.copy(), df_read)
                 output.to_csv(get_write_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv')
                 print(_dir + 'seed' + _seed + _csv + '.csv')
