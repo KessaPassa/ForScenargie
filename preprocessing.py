@@ -4,11 +4,9 @@ import numpy as np
 import shutil
 import env
 
-ROOT_DIR = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
+GET_ROOT_DIR = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
 CHILD_DIR = 'mobility-seed_'
 
-MAX_AREA_COUNT = 36
-MAX_TIME_COUNT = 6
 TIME_PER_SPLIT = 3600
 
 X_ZERO_AREA_POS = -8700
@@ -46,7 +44,7 @@ class Area:
 
 # ファイルパスを返す
 def get_read_path(_dir, _seed, _csv):
-    return ROOT_DIR + _dir + '/' + '10_0' + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
+    return GET_ROOT_DIR + _dir + '/' + '10_0' + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
 
 
 def get_write_path():
@@ -59,8 +57,8 @@ def get_write_path():
 
 # area0を左下起点にメッシュ範囲を作成
 def make_area_mesh():
-    one_side = np.sqrt(MAX_AREA_COUNT)
-    for index in range(MAX_AREA_COUNT):
+    one_side = np.sqrt(env.MAX_AREA_COUNT())
+    for index in range(env.MAX_AREA_COUNT()):
         x = X_ZERO_AREA_POS + AREA_RANGE * (index % one_side)
         y = Y_ZERO_AREA_POS + AREA_RANGE * (index // one_side)
         area.append(Area(index, x, y))
@@ -69,7 +67,7 @@ def make_area_mesh():
 
 # 到着時間も含まれているので1時間ごとの時間に補間する
 def interpolate_time(time):
-    times_list = [3600 * (i + 1) for i in range(6)]
+    times_list = [3600 * (i + 1) for i in range(env.MAX_TIME_COUNT())]
     times = []
 
     if time in times_list:
@@ -96,7 +94,7 @@ def set_area_id(df):
     :type df: pd.DataFrame
     """
     df['area'] = -1
-    for index in range(MAX_AREA_COUNT):
+    for index in range(env.MAX_AREA_COUNT()):
         df.loc[
             (area[index].get_x - RADIUS <= df['x']) & (df['x'] <= area[index].get_x + RADIUS) &
             (area[index].get_y - RADIUS <= df['y']) & (df['y'] <= area[index].get_y + RADIUS),
@@ -140,10 +138,3 @@ if __name__ == '__main__':
 
             # od.csvはコピーでOneDriveへ移動
             shutil.copyfile(get_read_path(_dir, _seed, 'od'), get_write_path() + _dir + 'seed' + _seed + '_' + 'od.csv')
-
-    # # OneDriveにコピーする。その際すでにOriginフォルダがあるなら削除してからコピー
-    # copy_dir = env.ROOT_DIR() + 'Origin'
-    # if os.path.exists(copy_dir):
-    #     shutil.rmtree(copy_dir)
-    # shutil.copytree(get_write_path(), copy_dir)
-    # print('作業ディレクトリにコピー完了')

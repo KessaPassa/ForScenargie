@@ -41,15 +41,12 @@ def distribute_people(base, read):
 
 # 出力するフォーマットのベースを作る
 def create_people_dataframe():
-    times_length = 6
-    area_length = 36
-
-    people_dataframe = np.zeros((times_length * area_length, 3))
+    people_dataframe = np.zeros((env.MAX_TIME_COUNT() * env.MAX_AREA_COUNT(), 3))
     people_dataframe = pd.DataFrame(people_dataframe, columns=['time', 'area', 'people'])
 
     index = 0
-    for time in range(times_length):
-        for area in range(area_length):
+    for time in range(env.MAX_TIME_COUNT()):
+        for area in range(env.MAX_AREA_COUNT()):
             people_dataframe.loc[index, ['time', 'area']] = [[3600 * (time + 1), area]]
             index += 1
 

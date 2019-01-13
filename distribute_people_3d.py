@@ -40,7 +40,7 @@ def distribute_people(base, read):
 
 
 def create_people_dataframe():
-    return pd.DataFrame(np.zeros((36, 6)), columns=[1800 * (i + 1) for i in range(6)])
+    return pd.DataFrame(np.zeros((env.MAX_AREA_COUNT(), env.MAX_TIME_COUNT())), columns=[3600 * (i + 1) for i in range(env.MAX_TIME_COUNT())])
 
 
 if __name__ == '__main__':
