@@ -1,20 +1,15 @@
 import os
-import shutil
 import pandas as pd
 import numpy as np
+import shutil
 import env
-import time
 
-ROOT_DIR = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
 CHILD_DIR = 'mobility-seed_'
 
-MAX_AREA_COUNT = 36
-MAX_TIME_COUNT = 6
 TIME_PER_SPLIT = 3600
 
-X_ZERO_AREA_POS = -8700
-Y_ZERO_AREA_POS = -9250
-# ZERO_MESH_POS = (-8700, -9250)
+X_ZERO_AREA_POS = -10700
+Y_ZERO_AREA_POS = -11250
 AREA_RANGE = 2000
 RADIUS = AREA_RANGE / 2
 
@@ -47,17 +42,21 @@ class Area:
 
 # ファイルパスを返す
 def get_read_path(_dir, _seed, _csv):
-    return ROOT_DIR + _dir + '/' + _dir + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
+    return env.SCENARGIE_DIR() + _dir + '/' + '10_0' + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
 
 
-def get_write_path():
-    return ROOT_DIR + 'logs/'
+def get_write_path(name):
+    path = env.ROOT_DIR() + name + '/'
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
+    return path
 
 
 # area0を左下起点にメッシュ範囲を作成
 def make_area_mesh():
-    one_side = np.sqrt(MAX_AREA_COUNT)
-    for index in range(MAX_AREA_COUNT):
+    one_side = np.sqrt(env.MAX_AREA_COUNT())
+    for index in range(env.MAX_AREA_COUNT()):
         x = X_ZERO_AREA_POS + AREA_RANGE * (index % one_side)
         y = Y_ZERO_AREA_POS + AREA_RANGE * (index // one_side)
         area.append(Area(index, x, y))
@@ -66,7 +65,7 @@ def make_area_mesh():
 
 # 到着時間も含まれているので1時間ごとの時間に補間する
 def interpolate_time(time):
-    times_list = [3600 * (i + 1) for i in range(6)]
+    times_list = [3600 * (i + 1) for i in range(env.MAX_TIME_COUNT())]
     times = []
 
     if time in times_list:
@@ -93,7 +92,7 @@ def set_area_id(df):
     :type df: pd.DataFrame
     """
     df['area'] = -1
-    for index in range(MAX_AREA_COUNT):
+    for index in range(env.MAX_AREA_COUNT()):
         df.loc[
             (area[index].get_x - RADIUS <= df['x']) & (df['x'] <= area[index].get_x + RADIUS) &
             (area[index].get_y - RADIUS <= df['y']) & (df['y'] <= area[index].get_y + RADIUS),
@@ -106,13 +105,12 @@ if __name__ == '__main__':
 
     columns = ['id', 'type', 'is_arrived', 'time', 'road', 'x', 'y']
     dir_list = ['people10000', 'people20000', 'people30000']
+    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT())]
     csv_list = ['census', 'mobile']
-    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT)]
 
     for _dir in dir_list:
         for _seed in seed_list:
             for _csv in csv_list:
-                start = time.time()
                 # ただのshift-jisではダメ
                 df = pd.read_csv(get_read_path(_dir, _seed, _csv), names=columns, encoding='Shift_JISx0213')
 
@@ -122,25 +120,25 @@ if __name__ == '__main__':
                 # 新しくarea列を追加
                 set_area_id(reader)
 
-                # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
-                reader = reader[reader['area'] != -1]
-
                 # road列から(census)を取り除く
                 reader['road'] = reader['road'].apply(lambda x: x.split('(census)')[0])
 
                 # time列を補間
                 reader['time'] = reader['time'].apply(interpolate_time)
 
-                reader.to_csv(get_write_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv',
+                # od to area用に-1を除かないモノも保存する
+                if _csv == 'census':
+                    reader.to_csv(get_write_path('include_area_-1') + _dir + 'seed' + _seed + '_' + _csv + '.csv',
+                                  index=None,
+                                  encoding='Shift_JISx0213')
+
+                # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
+                reader = reader[reader['area'] != -1]
+
+                reader.to_csv(get_write_path('Origin') + _dir + 'seed' + _seed + '_' + _csv + '.csv',
                               index=None,
                               encoding='Shift_JISx0213')
                 print(_dir + 'seed' + _seed + '_' + _csv + '.csv')
-                elapsed_time = time.time() - start
-                print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
 
-    # OneDriveにコピーする。その際すでにOriginフォルダがあるなら削除してからコピー
-    copy_dir = env.ROOT_DIR + 'Origin'
-    if os.path.exists(copy_dir):
-        shutil.rmtree(copy_dir)
-    shutil.copytree(get_write_path(), copy_dir)
-    print('作業ディレクトリにコピー完了')
+            # od.csvはコピーでOneDriveへ移動
+            shutil.copyfile(get_read_path(_dir, _seed, 'od'), get_write_path('Origin') + _dir + 'seed' + _seed + '_' + 'od.csv')
