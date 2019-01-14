@@ -53,7 +53,7 @@ if __name__ == '__main__':
     for _dir in dir_list:
         for _seed in seed_list:
             for _csv in csv_list:
-                df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv', index_col=0)
+                df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv')
                 output = distribute_people(df_base.copy(), df_read)
                 output.to_csv(get_write_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv')
                 print(_dir + 'seed' + _seed + _csv + '.csv')

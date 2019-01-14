@@ -4,14 +4,12 @@ import numpy as np
 import shutil
 import env
 
-GET_ROOT_DIR = 'C:/Users/admin/Documents/Scenargie/2018_Graduate/case/'
 CHILD_DIR = 'mobility-seed_'
 
 TIME_PER_SPLIT = 3600
 
-X_ZERO_AREA_POS = -8700
-Y_ZERO_AREA_POS = -9250
-# ZERO_MESH_POS = (-8700, -9250)
+X_ZERO_AREA_POS = -10700
+Y_ZERO_AREA_POS = -11250
 AREA_RANGE = 2000
 RADIUS = AREA_RANGE / 2
 
@@ -44,11 +42,11 @@ class Area:
 
 # ファイルパスを返す
 def get_read_path(_dir, _seed, _csv):
-    return GET_ROOT_DIR + _dir + '/' + '10_0' + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
+    return env.SCENARGIE_DIR() + _dir + '/' + '10_0' + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
 
 
-def get_write_path():
-    path = env.ROOT_DIR() + 'Origin/'
+def get_write_path(name):
+    path = env.ROOT_DIR() + name + '/'
     if not os.path.isdir(path):
         os.makedirs(path)
 
@@ -122,19 +120,25 @@ if __name__ == '__main__':
                 # 新しくarea列を追加
                 set_area_id(reader)
 
-                # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
-                reader = reader[reader['area'] != -1]
-
                 # road列から(census)を取り除く
                 reader['road'] = reader['road'].apply(lambda x: x.split('(census)')[0])
 
                 # time列を補間
                 reader['time'] = reader['time'].apply(interpolate_time)
 
-                reader.to_csv(get_write_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv',
+                # od to area用に-1を除かないモノも保存する
+                if _csv == 'census':
+                    reader.to_csv(get_write_path('include_area_-1') + _dir + 'seed' + _seed + '_' + _csv + '.csv',
+                                  index=None,
+                                  encoding='Shift_JISx0213')
+
+                # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
+                reader = reader[reader['area'] != -1]
+
+                reader.to_csv(get_write_path('Origin') + _dir + 'seed' + _seed + '_' + _csv + '.csv',
                               index=None,
                               encoding='Shift_JISx0213')
                 print(_dir + 'seed' + _seed + '_' + _csv + '.csv')
 
             # od.csvはコピーでOneDriveへ移動
-            shutil.copyfile(get_read_path(_dir, _seed, 'od'), get_write_path() + _dir + 'seed' + _seed + '_' + 'od.csv')
+            shutil.copyfile(get_read_path(_dir, _seed, 'od'), get_write_path('Origin') + _dir + 'seed' + _seed + '_' + 'od.csv')

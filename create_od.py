@@ -19,7 +19,7 @@ def get_write_path():
 
 # 時間のindexとリストを返す
 def split_type(time):
-    times_list = [3600 * (i + 1) for i in range(6)]
+    times_list = [3600 * (i + 1) for i in range(env.MAX_TIME_COUNT())]
     index = times_list.index(time)
     for key, value in enumerate(times_list):
         if key == index:
