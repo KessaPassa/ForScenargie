@@ -42,7 +42,7 @@ class Area:
 
 # ファイルパスを返す
 def get_read_path(_dir, _seed, _csv):
-    return env.SCENARGIE_DIR() + _dir + '/' + '10_0' + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
+    return env.SCENARGIE_DIR() + _dir + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
 
 
 def get_write_path(name):
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     make_area_mesh()
 
     columns = ['id', 'type', 'is_arrived', 'time', 'road', 'x', 'y']
-    dir_list = ['people10000', 'people20000', 'people30000']
+    dir_list = env.DIR_LIST()
     seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT())]
     csv_list = ['census', 'mobile']
 

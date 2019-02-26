@@ -46,7 +46,7 @@ def create_people_dataframe():
 if __name__ == '__main__':
     df_base = create_people_dataframe()
 
-    dir_list = ['people10000', 'people20000', 'people30000']
+    dir_list = env.DIR_LIST()
     seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT())]
     csv_list = ['census', 'mobile']
 

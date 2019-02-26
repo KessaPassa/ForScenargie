@@ -77,6 +77,8 @@ if __name__ == '__main__':
                                  encoding='Shift_JISx0213')
                 main_array[_dir][_seed][_csv] = df
 
+    print('準備の読み込み終了')
+
     for _dir in dir_list:
         for _seed in seed_list:
             for _csv in csv_list:
