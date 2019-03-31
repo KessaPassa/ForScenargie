@@ -40,17 +40,23 @@ class Area:
         return self.y
 
 
-# ファイルパスを返す
-def get_read_path(_dir, _seed, _csv):
-    return env.SCENARGIE_DIR() + _dir + '/' + '10_0' + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
+# 読み込みファイルパスを返す
+def get_read_path(_dir, _ratio, _seed, _csv):
+    return env.SCENARGIE_DIR() + _dir + '/' + _ratio + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
 
 
+# 書き込みファイルパスを返す
 def get_write_path(name):
     path = env.ROOT_DIR() + name + '/'
     if not os.path.isdir(path):
         os.makedirs(path)
 
     return path
+
+
+# ファイル名を作成して返す
+def get_file_name(_dir, _ratio, _seed, _csv):
+    return _dir + _ratio + 's' + _seed + '_' + _csv + '.csv'
 
 
 # area0を左下起点にメッシュ範囲を作成
@@ -99,46 +105,64 @@ def set_area_id(df):
             'area'] = area[index].get_id
 
 
-# Scenargieのoutput dataがあるPCで実行すること
-if __name__ == '__main__':
+def main():
     make_area_mesh()
 
     columns = ['id', 'type', 'is_arrived', 'time', 'road', 'x', 'y']
-    dir_list = ['people10000', 'people20000', 'people30000']
+    dir_list = env.DIR_LIST()
+    ratio_list = env.RATIO_LIST()
     seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT())]
     csv_list = ['census', 'mobile']
 
     for _dir in dir_list:
-        for _seed in seed_list:
-            for _csv in csv_list:
-                # ただのshift-jisではダメ
-                df = pd.read_csv(get_read_path(_dir, _seed, _csv), names=columns, encoding='Shift_JISx0213')
+        for _ratio in ratio_list:
+            for _seed in seed_list:
+                for _csv in csv_list:
+                    # ただのshift-jisではダメ
+                    df = pd.read_csv(get_read_path(_dir, _ratio, _seed, _csv), names=columns, encoding='Shift_JISx0213')
 
-                # 上書きしないようにコピーする
-                reader = df.copy()
+                    # 上書きしないようにコピーする
+                    reader = df.copy()
 
-                # 新しくarea列を追加
-                set_area_id(reader)
+                    # 新しくarea列を追加
+                    set_area_id(reader)
 
-                # road列から(census)を取り除く
-                reader['road'] = reader['road'].apply(lambda x: x.split('(census)')[0])
+                    # road列から(census)を取り除く
+                    reader['road'] = reader['road'].apply(lambda x: x.split('(census)')[0])
 
-                # time列を補間
-                reader['time'] = reader['time'].apply(interpolate_time)
+                    # time列を補間
+                    reader['time'] = reader['time'].apply(interpolate_time)
 
-                # od to area用に-1を除かないモノも保存する
-                if _csv == 'census':
-                    reader.to_csv(get_write_path('include_area_-1') + _dir + 'seed' + _seed + '_' + _csv + '.csv',
+                    # od to area用に-1を除かないモノも保存する
+                    if _csv == 'census':
+                        reader.to_csv(
+                            get_write_path('include_area_-1') + get_file_name(_dir, _ratio, _seed, _csv),
+                            index=None,
+                            encoding='Shift_JISx0213')
+
+                    # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
+                    reader = reader[reader['area'] != -1]
+
+                    reader.to_csv(get_write_path('Origin') + get_file_name(_dir, _ratio, _seed, _csv),
                                   index=None,
                                   encoding='Shift_JISx0213')
+                    print(get_file_name(_dir, _ratio, _seed, _csv))
 
-                # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
-                reader = reader[reader['area'] != -1]
+                # od.csvはコピーでOneDriveへ移動
+                shutil.copyfile(get_read_path(_dir, _ratio, _seed, 'od'),
+                                get_write_path('Origin') + get_file_name(_dir, _ratio, _seed, 'od'))
+                print(get_file_name(_dir, _ratio, _seed, 'od'))
 
-                reader.to_csv(get_write_path('Origin') + _dir + 'seed' + _seed + '_' + _csv + '.csv',
-                              index=None,
-                              encoding='Shift_JISx0213')
-                print(_dir + 'seed' + _seed + '_' + _csv + '.csv')
 
-            # od.csvはコピーでOneDriveへ移動
-            shutil.copyfile(get_read_path(_dir, _seed, 'od'), get_write_path('Origin') + _dir + 'seed' + _seed + '_' + 'od.csv')
+# Scenargieのoutput dataがあるPCで実行すること
+if __name__ == '__main__':
+    print('preprocessing.pyを開始します')
+    print('出力ファイルは{}に保存されます'.format(env.ROOT_DIR()))
+    print('確認フォルダ名:   ===  [{}]  ===  '.format(env.OUTPUT_DIR_NAME()))
+    print('処理を開始しますか？[y/n]')
+    command = input()
+    if command == 'y' or command == 'yes':
+        print('開始します')
+        main()
+    else:
+        print('終了します')
