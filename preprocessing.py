@@ -1,4 +1,5 @@
 import os
+import sys
 import pandas as pd
 import numpy as np
 import shutil
@@ -41,8 +42,23 @@ class Area:
 
 
 # 読み込みファイルパスを返す
-def get_read_path(_dir, _ratio, _seed, _csv):
-    return env.SCENARGIE_DIR() + _dir + '/' + _ratio + '/' + CHILD_DIR + _seed + '/' + _csv + '.csv'
+def get_read_path(args):
+    return env.SCENARGIE_DIR() + args.dir + '/' + args.ratio + '/' + CHILD_DIR + args.seed + '/' + args.csv + '.csv'
+
+
+# フォルダのチェック。すでにあるということは上書きの危険があるため
+def check_write_dir(path):
+    if os.path.isdir(path):
+        print('指定フォルダ [{}] は既に存在します'.format(env.OUTPUT_DIR_NAME()))
+        print('上書き処理しますか？(y/n)')
+        command = input()
+        if not command == 'y':
+            return False
+    else:
+        os.makedirs(path)
+        print('フォルダを作成しました')
+
+    return True
 
 
 # 書き込みファイルパスを返す
@@ -134,26 +150,22 @@ def main(args):
 
 # Scenargieのoutput dataがあるPCで実行すること
 if __name__ == '__main__':
-    print('preprocessing.pyを開始します')
-    print('出力ファイルは{}に保存されます'.format(env.ROOT_DIR()))
-    print('確認フォルダ名:   ===  [{}]  ===  '.format(env.OUTPUT_DIR_NAME()))
-    print('処理を開始しますか？[y/n]')
-    command = input()
-
-    if command == 'y' or command == 'yes':
+    if check_write_dir(env.ROOT_DIR()):
         make_area_mesh()
         columns = ['id', 'type', 'is_arrived', 'time', 'road', 'x', 'y']
 
         env.for_default(main)
 
         # od.csvはコピーでOneDriveへ移動
-        args = env.get_for_list(csv='od')
+        args = env.get_for_list()
         for _dir in args.dir:
             for _ratio in args.ratio:
                 for _seed in args.seed:
-                    shutil.copyfile(get_read_path(args),
-                                    get_write_path('Origin') + env.get_file_name(args))
-                    print(env.get_file_name(args))
+                    _args = env.ARGS_FOR_LIST(_dir, _ratio, _seed, 'od')
+                    shutil.copyfile(get_read_path(_args),
+                                    get_write_path('Origin') + env.get_file_name(_args))
+                    print(env.get_file_name(_args))
 
     else:
-        print('終了します')
+        print('プログラムを終了します')
+        sys.exit()
