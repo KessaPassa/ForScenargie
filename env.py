@@ -2,19 +2,28 @@ import os
 
 
 def SCENARGIE_DIR():
-    return 'C:/Users/admin/Documents/Scenargie/20190226/Batches/movement_cross_'
+    return 'C:/Users/admin/Documents/Scenargie/20190331/Batches/'
+
+
+def OUTPUT_DIR_NAME():
+    return '20190331'
 
 
 def ROOT_DIR():
     os_name = os.name
-    dir_name = '20190226'
+
     if os_name == 'posix':
-        return '/Users/kessapassa/OneDrive/research_log/' + dir_name + '/'
+        return '/Users/kessapassa/OneDrive/research_log/' + OUTPUT_DIR_NAME() + '/'
     elif os_name == 'nt':
-        return 'C:/Users/admin/OneDrive/research_log/' + dir_name + '/'
+        return 'C:/Users/admin/OneDrive/research_log/' + OUTPUT_DIR_NAME() + '/'
+
 
 def DIR_LIST():
-    return ['people30000']
+    return ['p10000', 'p20000', 'p30000']
+
+
+def RATIO_LIST():
+    return ['r6', 'r5', 'r4']
 
 
 def MAX_SEED_COUNT():
