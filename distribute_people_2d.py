@@ -53,27 +53,23 @@ def create_people_dataframe():
     return people_dataframe
 
 
+def main(args):
+    df_read = pd.read_csv(get_read_path() + env.get_file_name(args),
+                          encoding='Shift_JISx0213',
+                          dtype=None,
+                          delimiter=',')
+
+    start = time.time()
+
+    output = distribute_people(df_base.copy(), df_read)
+    output.to_csv(get_write_path() + env.get_file_name(args),
+                  index=False)
+    print(env.get_file_name(args))
+
+    elapsed_time = time.time() - start
+    print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
+
+
 if __name__ == '__main__':
     df_base = create_people_dataframe()
-
-    dir_list = env.DIR_LIST()
-    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT())]
-    csv_list = ['census', 'mobile']
-
-    for _dir in dir_list:
-        for _seed in seed_list:
-            for _csv in csv_list:
-                df_read = pd.read_csv(get_read_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv',
-                                      encoding='Shift_JISx0213',
-                                      dtype=None,
-                                      delimiter=',')
-
-                start = time.time()
-
-                output = distribute_people(df_base.copy(), df_read)
-                output.to_csv(get_write_path() + _dir + 'seed' + _seed + '_' + _csv + '.csv',
-                              index=False)
-                print(_dir + 'seed' + _seed + _csv + '.csv')
-
-                elapsed_time = time.time() - start
-                print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
+    env.for_default(main)

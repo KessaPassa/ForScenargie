@@ -54,11 +54,6 @@ def get_write_path(name):
     return path
 
 
-# ファイル名を作成して返す
-def get_file_name(_dir, _ratio, _seed, _csv):
-    return _dir + _ratio + 's' + _seed + '_' + _csv + '.csv'
-
-
 # area0を左下起点にメッシュ範囲を作成
 def make_area_mesh():
     one_side = np.sqrt(env.MAX_AREA_COUNT())
@@ -105,53 +100,36 @@ def set_area_id(df):
             'area'] = area[index].get_id
 
 
-def main():
-    make_area_mesh()
+def main(args):
+    # ただのshift-jisではダメ
+    df = pd.read_csv(get_read_path(args), names=columns, encoding='Shift_JISx0213')
 
-    columns = ['id', 'type', 'is_arrived', 'time', 'road', 'x', 'y']
-    dir_list = env.DIR_LIST()
-    ratio_list = env.RATIO_LIST()
-    seed_list = [str(123 + i) for i in range(env.MAX_SEED_COUNT())]
-    csv_list = ['census', 'mobile']
+    # 上書きしないようにコピーする
+    reader = df.copy()
 
-    for _dir in dir_list:
-        for _ratio in ratio_list:
-            for _seed in seed_list:
-                for _csv in csv_list:
-                    # ただのshift-jisではダメ
-                    df = pd.read_csv(get_read_path(_dir, _ratio, _seed, _csv), names=columns, encoding='Shift_JISx0213')
+    # 新しくarea列を追加
+    set_area_id(reader)
 
-                    # 上書きしないようにコピーする
-                    reader = df.copy()
+    # road列から(census)を取り除く
+    reader['road'] = reader['road'].apply(lambda x: x.split('(census)')[0])
 
-                    # 新しくarea列を追加
-                    set_area_id(reader)
+    # time列を補間
+    reader['time'] = reader['time'].apply(interpolate_time)
 
-                    # road列から(census)を取り除く
-                    reader['road'] = reader['road'].apply(lambda x: x.split('(census)')[0])
+    # od to area用に-1を除かないモノも保存する
+    if args.csv == 'census':
+        reader.to_csv(
+            get_write_path('include_area_-1') + env.get_file_name(args),
+            index=None,
+            encoding='Shift_JISx0213')
 
-                    # time列を補間
-                    reader['time'] = reader['time'].apply(interpolate_time)
+    # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
+    reader = reader[reader['area'] != -1]
 
-                    # od to area用に-1を除かないモノも保存する
-                    if _csv == 'census':
-                        reader.to_csv(
-                            get_write_path('include_area_-1') + get_file_name(_dir, _ratio, _seed, _csv),
-                            index=None,
-                            encoding='Shift_JISx0213')
-
-                    # メッシュ番号が-1以外、つまり範囲外の行を削除(範囲内のみ抽出)
-                    reader = reader[reader['area'] != -1]
-
-                    reader.to_csv(get_write_path('Origin') + get_file_name(_dir, _ratio, _seed, _csv),
-                                  index=None,
-                                  encoding='Shift_JISx0213')
-                    print(get_file_name(_dir, _ratio, _seed, _csv))
-
-                # od.csvはコピーでOneDriveへ移動
-                shutil.copyfile(get_read_path(_dir, _ratio, _seed, 'od'),
-                                get_write_path('Origin') + get_file_name(_dir, _ratio, _seed, 'od'))
-                print(get_file_name(_dir, _ratio, _seed, 'od'))
+    reader.to_csv(get_write_path('Origin') + env.get_file_name(args),
+                  index=None,
+                  encoding='Shift_JISx0213')
+    print(env.get_file_name(args))
 
 
 # Scenargieのoutput dataがあるPCで実行すること
@@ -161,8 +139,21 @@ if __name__ == '__main__':
     print('確認フォルダ名:   ===  [{}]  ===  '.format(env.OUTPUT_DIR_NAME()))
     print('処理を開始しますか？[y/n]')
     command = input()
+
     if command == 'y' or command == 'yes':
-        print('開始します')
-        main()
+        make_area_mesh()
+        columns = ['id', 'type', 'is_arrived', 'time', 'road', 'x', 'y']
+
+        env.for_default(main)
+
+        # od.csvはコピーでOneDriveへ移動
+        args = env.get_for_list(csv='od')
+        for _dir in args.dir:
+            for _ratio in args.ratio:
+                for _seed in args.seed:
+                    shutil.copyfile(get_read_path(args),
+                                    get_write_path('Origin') + env.get_file_name(args))
+                    print(env.get_file_name(args))
+
     else:
         print('終了します')
