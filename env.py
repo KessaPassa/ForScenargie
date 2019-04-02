@@ -2,21 +2,22 @@ import os
 from collections import namedtuple
 
 
+def BASE_DIR_NAME():
+    return '20190402'
+
+
 def SCENARGIE_DIR():
-    return 'C:/Users/admin/Documents/Scenargie/20190331/Batches/'
-
-
-def OUTPUT_DIR_NAME():
-    return '20190331'
+    name = BASE_DIR_NAME()
+    return 'C:/Users/admin/Documents/Scenargie/{}/Batches/'.format(name)
 
 
 def ROOT_DIR():
     os_name = os.name
 
     if os_name == 'posix':
-        return '/Users/kessapassa/OneDrive/research_log/' + OUTPUT_DIR_NAME() + '/'
+        return '/Users/kessapassa/OneDrive/research_log/' + BASE_DIR_NAME() + '/'
     elif os_name == 'nt':
-        return 'C:/Users/admin/OneDrive/research_log/' + OUTPUT_DIR_NAME() + '/'
+        return 'C:/Users/admin/OneDrive/research_log/' + BASE_DIR_NAME() + '/'
 
 
 def DIR_LIST():
@@ -24,7 +25,7 @@ def DIR_LIST():
 
 
 def RATIO_LIST():
-    return ['r6', 'r5', 'r4']
+    return ['r4', 'r5', 'r6']
 
 
 def MAX_SEED_COUNT():

@@ -43,13 +43,13 @@ class Area:
 
 # 読み込みファイルパスを返す
 def get_read_path(args):
-    return env.SCENARGIE_DIR() + args.dir + '/' + args.ratio + '/' + CHILD_DIR + args.seed + '/' + args.csv + '.csv'
+    return env.SCENARGIE_DIR() + args.dir + '/' + args.ratio + '/' + CHILD_DIR + args.seed.split('s')[1] + '/' + args.csv + '.csv'
 
 
 # フォルダのチェック。すでにあるということは上書きの危険があるため
 def check_write_dir(path):
     if os.path.isdir(path):
-        print('指定フォルダ [{}] は既に存在します'.format(env.OUTPUT_DIR_NAME()))
+        print('指定フォルダ [{}] は既に存在します'.format(env.BASE_DIR_NAME()))
         print('上書き処理しますか？(y/n)')
         command = input()
         if not command == 'y':
