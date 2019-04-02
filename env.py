@@ -46,13 +46,13 @@ ARGS_FOR_LIST = namedtuple('FOR_LIST', ('dir', 'ratio', 'seed', 'csv'))
 
 # ファイル名を作成して返す
 def get_file_name(args):
-    return args.dir + args.ratio + 's' + args.seed + '_' + args.csv + '.csv'
+    return args.dir + args.ratio + args.seed + '_' + args.csv + '.csv'
 
 
 def get_for_list():
     dir_list = DIR_LIST()
     ratio_list = RATIO_LIST()
-    seed_list = [str(123 + i) for i in range(MAX_SEED_COUNT())]
+    seed_list = ['s' + str(123 + i) for i in range(MAX_SEED_COUNT())]
     csv_list = ['census', 'mobile']
 
     return ARGS_FOR_LIST(dir_list, ratio_list, seed_list, csv_list)
