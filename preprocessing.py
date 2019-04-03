@@ -43,7 +43,8 @@ class Area:
 
 # 読み込みファイルパスを返す
 def get_read_path(args):
-    return env.SCENARGIE_DIR() + args.dir + '/' + args.ratio + '/' + CHILD_DIR + args.seed.split('s')[1] + '/' + args.csv + '.csv'
+    return env.SCENARGIE_DIR() + args.dir + '/' + args.ratio + '/' + CHILD_DIR + args.seed.split('s')[
+        1] + '/' + args.csv + '.csv'
 
 
 # フォルダのチェック。すでにあるということは上書きの危険があるため
