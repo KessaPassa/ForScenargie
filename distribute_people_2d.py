@@ -72,4 +72,4 @@ def main(args):
 
 if __name__ == '__main__':
     df_base = create_people_dataframe()
-    env.for_default(main)
+    env.for_default(main, ['mobile', 'census'])

@@ -23,7 +23,6 @@ def create_next_move_area(df, area):
 
 def main(args):
     df = pd.read_csv(env.get_full_path(read_dir_name, args),
-                     names=env.get_col_names(),
                      encoding='Shift_JISx0213')
 
     for _area in env.get_area_list():
