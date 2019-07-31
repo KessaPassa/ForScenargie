@@ -35,4 +35,4 @@ if __name__ == '__main__':
         sys.exit()
 
     csv_array = {}
-    env.for_default_init(main, csv_array)
+    env.for_default_init(main, csv_array, ['mobile', 'census'])

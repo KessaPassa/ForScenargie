@@ -37,4 +37,4 @@ if __name__ == '__main__':
         print('プログラムを終了します')
         sys.exit()
 
-    env.for_default(main)
+    env.for_default(main, ['mobile', 'census'])
