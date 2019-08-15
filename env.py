@@ -3,7 +3,7 @@ from collections import namedtuple
 
 
 def BASE_DIR_NAME():
-    return '20190726'
+    return '20190816'
 
 
 def SCENARGIE_DIR():

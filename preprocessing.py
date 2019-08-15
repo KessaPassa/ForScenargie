@@ -118,6 +118,8 @@ def set_area_id(df):
 
 
 def main(args):
+    columns = ['id', 'type', 'is_arrived', 'time', 'road', 'x', 'y', 'up_low']
+
     # ただのshift-jisではダメ
     df = pd.read_csv(get_read_path(args), names=columns, encoding='Shift_JISx0213')
 
@@ -146,6 +148,23 @@ def main(args):
     reader.to_csv(get_write_path('Origin') + env.get_file_name(args),
                   index=None,
                   encoding='Shift_JISx0213')
+
+    up = reader[reader['up_low'] == 1]
+    up.to_csv(get_write_path('Origin') + env.get_file_name(args, '1'),
+              index=None,
+              encoding='Shift_JISx0213')
+
+    low = reader[reader['up_low'] == 2]
+    low.to_csv(get_write_path('Origin') + env.get_file_name(args, '2'),
+               index=None,
+               encoding='Shift_JISx0213')
+    print(env.get_file_name(args))
+
+
+# od.csvはコピーでOneDriveへ移動
+def copy_od(args):
+    shutil.copyfile(get_read_path(args),
+                    get_write_path('Origin') + env.get_file_name(args))
     print(env.get_file_name(args))
 
 
@@ -153,19 +172,9 @@ def main(args):
 if __name__ == '__main__':
     if check_write_dir(env.ROOT_DIR()):
         make_area_mesh()
-        columns = ['id', 'type', 'is_arrived', 'time', 'road', 'x', 'y']
 
-        env.for_default(main)
-
-        # od.csvはコピーでOneDriveへ移動
-        args = env.get_for_list()
-        for _dir in args.dir:
-            for _ratio in args.ratio:
-                for _seed in args.seed:
-                    _args = env.ARGS_FOR_LIST(_dir, _ratio, _seed, 'od')
-                    shutil.copyfile(get_read_path(_args),
-                                    get_write_path('Origin') + env.get_file_name(_args))
-                    print(env.get_file_name(_args))
+        env.for_default(main, ['mobile', 'census'])
+        env.for_default(copy_od, ['od'])
 
     else:
         print('プログラムを終了します')
