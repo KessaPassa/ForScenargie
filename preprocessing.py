@@ -149,15 +149,16 @@ def main(args):
                   index=None,
                   encoding='Shift_JISx0213')
 
-    up = reader[reader['up_low'] == 1]
-    up.to_csv(get_write_path('Origin') + env.get_file_name(args, '1'),
-              index=None,
-              encoding='Shift_JISx0213')
+    if args.csv == 'census':
+        up = reader[reader['up_low'] == 1]
+        up.to_csv(get_write_path('Origin') + env.get_file_name(args, '1'),
+                  index=None,
+                  encoding='Shift_JISx0213')
 
-    low = reader[reader['up_low'] == 2]
-    low.to_csv(get_write_path('Origin') + env.get_file_name(args, '2'),
-               index=None,
-               encoding='Shift_JISx0213')
+        low = reader[reader['up_low'] == 2]
+        low.to_csv(get_write_path('Origin') + env.get_file_name(args, '2'),
+                   index=None,
+                   encoding='Shift_JISx0213')
     print(env.get_file_name(args))
 
 
